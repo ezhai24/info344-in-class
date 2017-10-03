@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"info344-in-class/zipsvr/handlers"
 	"info344-in-class/zipsvr/models"
 	"log"
 	"net/http"
@@ -49,6 +50,13 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", helloHandler)
 	mux.HandleFunc("/memory", memoryHandler)
+
+	cityHandler := &handlers.CityHandler{
+		Index:      cityIndex,
+		PathPrefix: "/zips/",
+	}
+	mux.Handle("/zips/", cityHandler)
+
 	fmt.Printf("server is listening at http://%s\n", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
