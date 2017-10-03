@@ -1,10 +1,15 @@
 package main
 
-import "fmt"
-import "net/http"
-import "log"
-import "runtime"
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+	"info344-in-class/zipsvr/models"
+	"log"
+	"net/http"
+	"os"
+	"runtime"
+	"strings"
+)
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
@@ -24,10 +29,26 @@ func memoryHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	addr := os.Getenv("ADDR")
+	if len(addr) == 0 {
+		addr = ":80"
+	}
+	zips, err := models.LoadZips("C:/Users/Emily Zhai/Documents/University of Washington/Senior/Info 344/Classwork/go/src/info344-in-class/zipsvr/zips.csv")
+	if err != nil {
+		log.Fatalf("error loading zips: %v", err)
+	}
+	log.Printf("loaded %d zips", len(zips))
+
+	cityIndex := models.ZipIndex{}
+	for _, z := range zips {
+		cityLower := strings.ToLower(z.City) // make case insensitive
+		cityIndex[cityLower] = append(cityIndex[cityLower], z)
+	}
+
 	// fmt.Println("Hello World!")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", helloHandler)
 	mux.HandleFunc("/memory", memoryHandler)
-	fmt.Printf("server is listening at http://localhost:4000\n")
-	log.Fatal(http.ListenAndServe("localhost:4000", mux))
+	fmt.Printf("server is listening at http://%s\n", addr)
+	log.Fatal(http.ListenAndServe(addr, mux))
 }
