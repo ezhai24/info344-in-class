@@ -22,6 +22,7 @@ func (ch *CityHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Add(headerContentType, contentTypeJSON)
+	w.Header().Add(accessControlAllowOrigin, "*")
 	zips := ch.Index[cityName]
 	json.NewEncoder(w).Encode(zips)
 }
