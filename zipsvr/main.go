@@ -34,7 +34,7 @@ func main() {
 	if len(addr) == 0 {
 		addr = ":80"
 	}
-	zips, err := models.LoadZips("C:/Users/Emily Zhai/Documents/University of Washington/Senior/Info 344/Classwork/go/src/info344-in-class/zipsvr/zips.csv")
+	zips, err := models.LoadZips("/data/zips.csv")
 	if err != nil {
 		log.Fatalf("error loading zips: %v", err)
 	}
