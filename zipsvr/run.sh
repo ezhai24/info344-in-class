@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
-set -e
-docker run -d -p 80:80 -v "$(pwd)"/:/data/:ro ezhai24/zipsite
-go clean
+docker run -d \
+-p 443:443 \
+--name zipsvr \
+-v /Users/iguest/go/src/github.com/ezhai24/info344-in-class/zipsvr/tls:/tls:ro \
+-e TLSCERT=/tls/fullchain.pem \
+-e TLSKEY=/tls/privkey.pem \
+ezhai24/zipsite

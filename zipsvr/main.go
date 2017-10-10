@@ -33,8 +33,15 @@ func memoryHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	addr := os.Getenv("ADDR")
 	if len(addr) == 0 {
-		addr = ":80"
+		addr = ":443"
 	}
+
+	tlskey := os.Getenv("TLSKEY")
+	tlscert := os.Getenv("TLSCERT")
+	if len(tlscert) == 0 || len(tlskey) == 0 {
+		log.Fatal("please set TLSKEY and TLSCERT")
+	}
+
 	zips, err := models.LoadZips("/data/zips.csv")
 	if err != nil {
 		log.Fatalf("error loading zips: %v", err)
@@ -58,6 +65,6 @@ func main() {
 	}
 	mux.Handle("/zips/", cityHandler)
 
-	fmt.Printf("server is listening at http://%s\n", addr)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	fmt.Printf("server is listening at https://%s\n", addr)
+	log.Fatal(http.ListenAndServeTLS(addr, tlscert, tlskey, mux))
 }
