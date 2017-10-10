@@ -3,13 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"info344-in-class/zipsvr/handlers"
-	"info344-in-class/zipsvr/models"
 	"log"
 	"net/http"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/ezhai24/info344-in-class/zipsvr/handlers"
+	"github.com/ezhai24/info344-in-class/zipsvr/models"
 )
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
