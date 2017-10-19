@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 )
 
@@ -10,6 +11,13 @@ func (ctx *Context) TasksHandler(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		//TODO: parse the `completed` query string param as a boolean
 		//and call the GetAll() method on the tasks.Store to get the tasks
+		tasks, err := ctx.tasksStore.GetAll(false)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error getting tasks: %v", err),
+				http.StatusInternalServerError)
+			return
+		}
+		respond(w, tasks)
 	case "POST":
 		//TODO: decode the request body into a tasks.NewTask
 		//and insert it using the tasks.Store
