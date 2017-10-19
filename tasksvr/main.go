@@ -22,7 +22,7 @@ func main() {
 	//TODO: make connection to the DBMS
 	//construct the appropriate tasks.Store
 	//construct the handlers.Context
-	mongoSess, err := mgo.Dial("localhost")
+	mongoSess, err := mgo.Dial("192.168.99.100")
 	if err != nil {
 		log.Fatalf("error dialing mongo: %v", err)
 	}
@@ -32,7 +32,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/v1/tasks", handlerCtx.TasksHandler)
-	//mux.HandleFunc("/v1/tasks/", TODO: add SpecificTaskHandler )
+	mux.HandleFunc("/v1/tasks/", handlerCtx.SpecificTaskHandler)
 
 	fmt.Printf("server is listening at http://%s...\n", addr)
 	log.Fatal(http.ListenAndServe(addr, mux))

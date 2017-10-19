@@ -7,7 +7,7 @@
 
 # docker container image name for our customized MySQL image
 # TODO: change the value to use your DockerHub user name
-export TASKS_MYSQL_IMAGE=drstearns/mysqltasks
+export TASKS_MYSQL_IMAGE=ezhai24/mysqltasks
 
 # database name in which our schema will be created
 export MYSQL_DATABASE=tasks

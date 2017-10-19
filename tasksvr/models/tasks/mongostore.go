@@ -54,7 +54,7 @@ func (s *MongoStore) GetAll(completed bool) ([]*Task, error) {
 	tasks := []*Task{}
 	filter := &completedFilter{completed}
 	col := s.session.DB(s.dbname).C(s.colname)
-	if err := col.Find(filter).Limit(AllTasksLimit).All(tasks); err != nil {
+	if err := col.Find(filter).Limit(AllTasksLimit).All(&tasks); err != nil {
 		return nil, fmt.Errorf("error getting tasks: %v", err)
 	}
 	return tasks, nil
