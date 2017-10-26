@@ -8,15 +8,6 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-type completedFilter struct {
-	Completed bool
-}
-
-type updateDoc struct {
-	Completed  bool
-	ModifiedAt time.Time
-}
-
 //MongoStore implements Store for MongoDB
 type MongoStore struct {
 	session *mgo.Session
