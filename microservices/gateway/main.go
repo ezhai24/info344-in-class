@@ -38,14 +38,17 @@ func main() {
 
 	//TODO: get network addresses for our
 	//timesvc instances
-	timesvcAddrs := os.Getenv("TIMESVC_ADDR")
+	timesvcAddrs := os.Getenv("TIMESVC_ADDRS")
 	splitTimeSvcAddrs := strings.Split(timesvcAddrs, ",")
-	log.Printf("timesvcAddrs are %v", splitTimeSvcAddrs)
+
+	nodeSvcAddrs := os.Getenv("NODESVC_ADDRS")
+	splitNodeSvcAddrs := strings.Split(nodeSvcAddrs, ",")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", RootHandler)
 	//TODO: add reverse proxy handler for `/v1/time`
 	mux.Handle("/v1/time", NewServiceProxy(splitTimeSvcAddrs))
+	mux.Handle("v1/users/me/hello", NewServiceProxy(splitNodeSvcAddrs))
 
 	log.Printf("server is listening at https://%s...", addr)
 	log.Fatal(http.ListenAndServeTLS(addr, "tls/fullchain.pem", "tls/privkey.pem", mux))
