@@ -3,6 +3,8 @@ package main
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -59,6 +61,10 @@ func (ctx *HandlerContext) OAuthSignInHandler(w http.ResponseWriter, r *http.Req
 	// - adding it to the cache (default timeout)
 	// - redirecting the client to the authorization URL
 	//   returned from the OAuth config
+	state := newStateValue()
+	ctx.stateCache.Add(state, nil, cache.DefaultExpiration)
+	redirURL := ctx.oauthConfig.AuthCodeURL(state)
+	http.Redirect(w, r, redirURL, http.StatusSeeOther)
 }
 
 //OAuthReplyHandler handles requests made after authenticating
@@ -82,12 +88,46 @@ func (ctx *HandlerContext) OAuthReplyHandler(w http.ResponseWriter, r *http.Requ
 	// - use the token to get a new http.Client you can use to make requests on
 	//   behalf of the authenticated user
 	// - use that client to get the user's profile (see constants above)
+	qsParams := r.URL.Query()
+	if len(qsParams.Get("error")) > 0 {
+		errorDescription := qsParams.Get("error_description")
+		if len(errorDescription) == 0 {
+			errorDescription = "Error signing in: " + qsParams.Get("error")
+		}
+		http.Error(w, fmt.Sprintf("error signing in: %s", errorDescription), http.StatusInternalServerError)
+		return
+	}
+
+	stateReturned := qsParams.Get("state")
+	if _, found := ctx.stateCache.Get(stateReturned); !found {
+		http.Error(w, "invalid state value returned from oauth provider", http.StatusBadRequest)
+		return
+	}
+
+	ctx.stateCache.Delete(stateReturned)
+	token, err := ctx.oauthConfig.Exchange(oauth2.NoContext, qsParams.Get("code"))
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error getting access token: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	client := ctx.oauthConfig.Client(oauth2.NoContext, token)
+	profileRequest, _ := http.NewRequest(http.MethodGet, githubCurrentUserAPI, nil)
+	profileRequest.Header.Add(headerAccept, acceptGitHubV3JSON)
+	profileResponse, err := client.Do(profileRequest)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("error getting profile: %v", err), http.StatusInternalServerError)
+		return
+	}
+	defer profileResponse.Body.Close()
 
 	//After obtaining the current user's profile, this is where you
 	//would typically create a new User record in your system,
 	//and begin a new authenticated Session for that user.
 	//For purposes of this demo, we will just stream the profile
 	//to the client so that we can see what it contains
+	w.Header().Add(headerContentType, profileResponse.Header.Get(headerContentType))
+	io.Copy(w, profileResponse.Body)
 }
 
 func requireEnv(name string) string {
